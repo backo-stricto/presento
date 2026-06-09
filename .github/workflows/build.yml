@@ -1,4 +1,4 @@
-name: CodeCov
+name: pages
 
 on: [push, pull_request]
 
@@ -9,7 +9,7 @@ jobs:
     - name: Install dependencies
       run: |
         npm init -y
-        npm install @slidev/cli @slidev/theme-dracula
+        npm install @slidev/cli slidev-theme-dracula
 
     - name: build
       run: |
