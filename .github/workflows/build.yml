@@ -26,7 +26,7 @@ jobs:
   deploy:
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: https://backo-stricto.github.io
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -38,7 +38,6 @@ jobs:
       - name: build
         run: |
           npx slidev build --base /${{ github.event.repository.name }}/
-          cp dist/index.html dist/404.html
       - name: Setup Pages
         uses: actions/configure-pages@v6
       - name: Upload artifact
@@ -46,9 +45,6 @@ jobs:
         with:
           # Upload entire repository
           path: 'dist/'
-      - name: Deploy pages
-        uses: crazy-max/ghaction-github-pages@v2
-        with:
-          build_dir: dist
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
