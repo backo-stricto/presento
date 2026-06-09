@@ -37,7 +37,7 @@ jobs:
           npm install @slidev/cli slidev-theme-dracula
       - name: build
         run: |
-          npx slidev build --base /
+          npx slidev build --base /presento/
       - name: Setup Pages
         uses: actions/configure-pages@v6
       - name: Upload artifact
