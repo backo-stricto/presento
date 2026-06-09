@@ -14,4 +14,3 @@ jobs:
     - name: build
       run: |
         npx slidev build
-        mv dist/ public

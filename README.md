@@ -3,7 +3,7 @@
 slidev presentation for backo stricto
 
 
-## Build
+## Installation and build
 
 npm init -y
 npm install @slidev/cli @slidev/theme-dracula
