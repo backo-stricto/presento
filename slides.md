@@ -26,7 +26,7 @@ Backoffice low code
 
 ORM + API restfull
 
-<footer position="absolute">
+<footer>
 
 <div class="grid grid-cols-4 gap-4">
   <div>
@@ -34,6 +34,8 @@ ORM + API restfull
 ![](/images/icon.png)
 
   </div>
+  <div></div>
+  <div></div>
   <div>
 
 ![](/images/inr_logo_rouge.png)
@@ -1856,3 +1858,19 @@ layout: section
 
 [examples](https://github.com/bwallrich/backo/tree/main/examples)
 
+<footer>
+
+<div class="grid grid-cols-4 gap-4" style="filter:invert(30%) saturate(1000%)">
+  <div >
+    <img  src="/images/backo.svg" />
+  </div>
+  <div>
+  </div>
+  <div>
+  </div>
+  <div >
+    <img  src="/images/stricto.svg" />
+  </div>
+</div>
+
+</footer>
