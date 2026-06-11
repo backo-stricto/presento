@@ -26,6 +26,25 @@ Backoffice low code
 
 ORM + API restfull
 
+<footer position="absolute">
+
+<div class="grid grid-cols-4 gap-4">
+  <div>
+  
+![](/images/icon.png)
+
+  </div>
+  <div>
+
+![](/images/inr_logo_rouge.png)
+
+
+  </div>
+</div>
+
+</footer>
+
+
 
 
 ---
@@ -48,6 +67,7 @@ layout: two-cols
 
 ::left::
 
+
 <div v-click>
 
 <Transform :scale="0.8" origin="bottom center">
@@ -55,7 +75,6 @@ layout: two-cols
 ![](/images/logo_bio_eurofeuille.png)
 
 </Transform>
-
 
 </div>
 
@@ -69,6 +88,7 @@ layout: two-cols
 * __Choices__
   * language = python
   * reduced list of deps : flask, json, API restfull, JWT
+  * __MIT Licence__
 * __Performance ?__ (actually not important)
 
 
@@ -411,7 +431,10 @@ layout: two-cols
 ---
 
 
-## References (1/2)
+## References (1/3)
+
+* link between objets (colletions)
+* <span v-mark.red=2>keep the database consistency</span>
 
 <kbd>Ref</kbd> and <kbd>RefsList</kbd>
 
@@ -490,10 +513,89 @@ my_backoffice.add_collection(
 
 
 ---
-layout: two-cols
+layout: two-cols-header
 ---
 
-## References (2/2)
+## References (2/3) - database consistency
+
+::left::
+
+<Transform :scale="0.9">
+
+```python {2,7-9,16,21-23}
+my_backoffice.add_collection(
+    "users",
+    Item(
+        {
+            "name": String(),
+            "surname": String(),
+            "addr": Ref(
+              coll="addrs", field="$.users", required=True
+            ),
+            "male": Bool(default=True),
+        }),
+    yml_users
+)
+my_backoffice.add_collection(
+    "addrs",
+    Item(
+        {
+            "name": String(),
+            "address": String(),
+            "users": RefsList(
+                coll="users", field="$.addr"
+            ),
+        }),
+    yml_addr,
+    )
+```
+
+</Transform>
+
+::right::
+
+
+<Transform :scale="0.9">
+
+```python {hide|all}
+# Create addr
+moon = my_backoffice.addrs.create({"name": "moon", 
+            "address": "far", "users": [] })
+mars = my_backoffice.addrs.create({"name": "mars", 
+            "address": "very far", "users": [] })
+# Create users
+neil = my_backoffice.users.create({"name": "amstrong", 
+            "addr": moon._id})
+matt = my_backoffice.users.create({"name": "damon", 
+            "addr": mars._id})
+
+moon.reload()
+mars.reload()
+len(moon.users) # -> 1
+moon.delete()  # raise Error (not empty) !
+
+# matt goes back to moon
+matt.addr = moon._id
+matt.save()
+
+moon.reload()
+mars.reload()
+
+len(moon.users) # -> 2
+len(mars.users) # -> 0
+
+mars.delete()  # Ok (sorry Elon)
+
+```
+
+</Transform>
+
+
+---
+layout: two-cols-header
+---
+
+## References (3/3) - options
 
 ::left::
 
@@ -530,7 +632,6 @@ layout: two-cols
 </Transform>
 
 </div>
-
 
 
 ---
@@ -1346,7 +1447,7 @@ o.add_to_model(
 ---
 ---
 
-## meta routes (1/2)
+## meta routes (1/3)
 
 The way to get informations of the application for the client
 
@@ -1357,17 +1458,17 @@ The way to get informations of the application for the client
 
 ### Use case
 
-1. Building [openapi](https://www.openapis.org/) documentation
-2. Free the `front` from every "business code"
+1. Free the `front` from every "business code"
    1. No "business code" -> automatic creation of a lot of components.
    2. Behaviour adaptation of the `front` relating to ```current_user``` and the object (Item, Action, Selection...) and rights.
+
 
 
 ---
 layout: two-cols-header
 zoom: 0.7
 ---
-## meta routes (2/2)
+## meta routes (2/3)
 
 ::left::
 
@@ -1435,6 +1536,21 @@ curl -X POST 'http://localhost/myApp/users/_meta' -d \
 
 
 
+---
+---
+
+## meta routes (3/3)
+
+Generate [openapi](https://www.openapis.org/) documentation
+
+
+```bash
+curl -X GET 'http://localhost/myApp/_openapi'
+# Will return this structure.
+{
+...
+}
+```
 
 ---
 layout: section
@@ -1534,12 +1650,109 @@ routes are both _embedded_ and _multipart_.
 
 
 ---
+layout: section
+---
+
+# Migration
+Evolution of the DB
+
+
+---
 layout: two-cols-header
+zoom: 0.9
+---
+## Evolution of the datastructure
+Changing the model with datas already saved.
+
+::left::
+
+
+### Identify errors
+
+Check where datas mismatch the model. 
+
+Raise an error at first _id error
+
+
+```python {hide|all|3}
+book_item = Item({
+    ...
+    "note" : Float( require=True )
+    ...
+})
+```
+
+```python {hide|all}
+# check a specific _id
+report = myapp.migrate("books", _id="_id1")
+# or check a list of _id
+report = myapp.migrate("books", _ids=["_id1", "_id2"])
+# or check all ids
+report = myapp.migrate("books")
+```
+
+
+::right::
+
+### Test and do Migration
+<kbd>dry_run=False</kbd>
+
+<div v-click>
+
+```python
+def update_with_note(o: dict) -> dict:
+    """
+    this the function for doing operation on objects before setting them into the Item
+    """
+    if "note" not in o:
+        o["note"] = 10.0
+    return o
+
+
+# Check if OK (dry_run is True by default)
+report = mybackoffice.migrate("books", update_with_note, _id="_id")
+# do it for real
+report = mybackoffice.migrate("books", update_with_note, _id="_id", dry_run=False)
+```
+
+</div>
+
+---
+layout: section
+---
+
+# Internal
+Some internes stuffs
+
+
+---
+zoom: 1
+---
+
+## Transactions & rollback
+* Non atomic writes
+  * `Ref` and `RefsList`
+  * events that can involve additional writes
+* Transaction functions and rollback in case of any error
+  * each api route endpoint is a transaction
+  * local to a server (no clustering actually)
+<v-switch>
+<template #1>
+
+## views
+* The way to get sub-object of a `Item`. 
+  * _examples_ :
+    * It is not usefull to save computated fields (with `set=`)
+    * You may want some fields to not been sent to the client
+
+</template>
+</v-switch> 
+
+---
 zoom: 0.7
 ---
 # Quickstart
 
-::left::
 1. Installation 
    ```bash
    pip install backo   
@@ -1563,9 +1776,6 @@ zoom: 0.7
    if __name__ == "__main__":
        flask.run(host="0.0.0.0", port=5000)
    ```
-
-::right::
-
 3. Add _authentication_
 4. Create _Items_ et _Collections_
    1. `Item`
@@ -1573,6 +1783,56 @@ zoom: 0.7
 5. Rights
 6. Add some `Selection`
 7. Add some `Action`
+
+
+---
+layout: two-cols-header
+---
+# Work In Progress
+Some features are in progress
+
+::left::
+
+## Improving
+
+### DBConnectors
+
+* Filtering transformation (perf)
+* Implementation of _reduced view_
+* SQL databases, openLDAP __(WIP)__
+* Caching
+
+### FileConnector
+
+* different storage for files (S3, mongoDB...)
+
+### openAPI
+
+* 80% done
+  
+### Refs ans RefsList
+
+* Deal with incoherent datas
+
+::right::
+
+## Funky features
+
+### Backo-ception
+The way to use collection (and storage) from another backo server
+
+### ACL everywhere
+* Filtering access to routes
+
+### External modules
+* Authentication
+* Notification
+* ...
+
+F.R.O.N.T.O
+
+
+
 
 
 

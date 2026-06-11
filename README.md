@@ -1,6 +1,6 @@
 # diapo
 
-[slidev presentation for backo stricto](https://https://backo-stricto.github.io/diapo)
+[slidev presentation for backo stricto](https://backo-stricto.github.io/diapo/)
 
 
 
